@@ -1,0 +1,66 @@
+{
+  	"name": "__MSG_appName__",
+  	"description": "__MSG_appDescription__",
+  	"version": "1",
+  	"manifest_version": 2,
+  	"default_locale": "en",
+  	"permissions": [
+  		"alarms",
+  		"app.runtime",
+  		"app.window",
+  		"audio",
+  		"audioCapture",
+  		"bluetooth",
+  		"desktopCapture",
+  		"fileBrowserHandler",
+  		{
+  			"fileSystem": [
+  				"write",
+  				"retainEntries",
+  				"directory"
+  			]
+  		},
+  		"fullscreen",
+  		"geolocation",
+  		"idle",
+  		"infobars",
+  		{
+  			"mediaGalleries": [
+  				"read",
+  				"delete",
+  				"copyTo",
+  				"allAutoDetected"
+  			]
+  		},
+  		"notifications",
+  		"power",
+  		"pushMessaging",
+  		"serial",
+  		"storage",
+  		"videoCapture",
+  		"wallpaper",
+  		"webview",
+  		"<all_urls>"
+  	],
+  	"icons": {
+  		"16": "images/icon-16.png",
+  		"48": "images/icon-48.png",
+  		"128": "images/icon-128.png"
+  	},
+  	"app": {
+  		"background": {
+  			"scripts": [
+  				"scripts/main.js",
+  				"scripts/chromereload.js"
+  			]
+  		}
+  	},
+  	"file_browser_handlers": {
+  		"id": "upload",
+  		"default_title": "File browser",
+  		"file_filters": [
+  			"filesystem:*.*"
+  		]
+  	},
+  	"web_accessible_resources": "images/icon-48.png"
+  }
