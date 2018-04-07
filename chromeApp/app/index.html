@@ -11,11 +11,18 @@
 
         <!-- build:css styles/main.css -->
         <link rel="stylesheet" href="styles/main.css">
+        <script src="scripts/jquery.js"></script>
+        <script src="scripts/lodash.js"></script>
         <!-- endbuild -->
     </head>
     <body>
         <h1>'Allo</h1>
-
+        <select id="portList"></select>
+        <button id="port_open">Open Port</button>
+        <button id="port_close">Close Port</button>
+        <button id="serial_stop">Stop Serial</button>
+        <button id="serial_start">start Serial</button>
+        <ul id="serial-window" class="console" >Connecting to Serial...</ul>
         <!-- build:js scripts/vendor.js -->
         <!-- bower:js -->
         <!-- endbower -->
