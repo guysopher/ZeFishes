@@ -3,6 +3,15 @@ body {
   background: #f2f2f2;
 }
 
+#music_container {
+  height: calc(100vh - 10px);
+  overflow: auto;
+}
+
+#music_container audio {
+  width: 100%;
+}
+
 ul.console {
   list-style-type: none;
   height: calc(100vh - 170px);
@@ -31,4 +40,9 @@ ul.console li {
   background: none;
   border: none;
   border-bottom: 1px solid #ccc;
+}
+
+.music-card {
+  width: calc(100% - 10px);
+  margin: 5px;
 }
