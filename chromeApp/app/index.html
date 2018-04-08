@@ -10,6 +10,9 @@
         <!-- endbuild -->
 
         <!-- build:css styles/main.css -->
+        <link rel="stylesheet" href="styles/bootstrap-reboot.css">
+        <link rel="stylesheet" href="styles/bootstrap-grid.css">
+        <link rel="stylesheet" href="styles/bootstrap.css">
         <link rel="stylesheet" href="styles/main.css">
         <script src="scripts/libs/jquery.js"></script>
         <script src="scripts/libs/lodash.js"></script>
@@ -17,13 +20,25 @@
         <!-- endbuild -->
     </head>
     <body>
-        <h1>'Allo</h1>
-        <select id="portList"></select>
-        <button id="port_open">Open Port</button>
-        <button id="port_close">Close Port</button>
-        <button id="serial_stop">Stop Serial</button>
-        <button id="serial_start">start Serial</button>
-        <ul id="serial-window" class="console" >Connecting to Serial...</ul>
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-sm-6">
+              <select id="portList" class="form-control"></select>
+              <br/>
+              <button class="btn btn-success" id="port_open">Open Port</button>
+              <button class="btn btn-danger" id="port_close">Close Port</button>
+              <button class="btn btn-primary" id="serial_start">Resume Serial</button>
+              <button class="btn btn-danger" id="serial_stop">Stop Serial</button>
+              <hr/>
+              <ul id="serial-window" class="console" >
+                <li>Waiting for serial connection...</li>
+                <li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li>
+              </ul>
+            </div>
+            <div class="col-sm-6">
+            </div>
+          </div>
+        </div>
         <!-- build:js scripts/vendor.js -->
         <!-- bower:js -->
         <!-- endbower -->

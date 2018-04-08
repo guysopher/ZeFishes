@@ -9,11 +9,19 @@ class Serial {
     this.serialWindow = $('#serial-window');
 
     this.initDom();
+    this.initChime();
+  }
 
-    setInterval(() => {
-      this.addRecord("--------------------| " + (new Date).toString() + "|--------------------", false);
-    }, 60 * 1000);
-
+  initChime() {
+    const minute = 5 * 1000;
+    const now = Date.now();
+    const chime = () => "=========> " + moment(Date.now()).format("dddd, MMMM Do YYYY, HH:mm:ss");
+    setTimeout(() => {
+      setInterval(() => {
+        this.addRecord(chime(), false);
+      }, minute);
+      this.addRecord(chime(), false);
+    }, (((parseInt(now / minute) + 1) * minute) - now));
   }
 
   logit() {
