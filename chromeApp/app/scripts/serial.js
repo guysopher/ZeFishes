@@ -24,10 +24,6 @@ class Serial {
     }, (((parseInt(now / minute) + 1) * minute) - now));
   }
 
-  logit() {
-    console.log(arguments[0],arguments[1],arguments[2],arguments);
-  }
-
   decode(buf) {
     return this.decoder.decode(buf);
   }
