@@ -6,13 +6,18 @@ const logit = function() {
   console.log(arguments[0],arguments[1],arguments[2],arguments);
 }
 
-
+const SAMPLE_SIZE = 2;
 
 class Music {
   constructor() {
     this.initSets();
+    this.initDom();
     this.render();
     this.playIdle();
+  }
+
+  initDom() {
+    this.dom = $('#music_container');
   }
 
   initSets() {
@@ -40,62 +45,107 @@ class Music {
     ];
   }
 
-  suffleSet(setId) {
-    this.sets[setId].tracks = _.shuffle(this.sets[setId].tracks);
+  shuffleSet(s) {
+    const dom = $(`#s${s}`);
+    this.sets[s].tracks = _.shuffle(this.sets[s].tracks);
+    this.renderSet(this.sets[s], s);
   }
 
   pauseAll(exceptSet, exceptTrack) {
     this.sets.forEach((set, s) => {
       set.tracks.forEach((track, t) => {
+        const dom = $(`#s${s}`);
+        if (s !== exceptSet) {
+          if (dom.hasClass('playing-set')) {
+            this.shuffleSet(s);
+            dom.removeClass('playing-set');
+          }
+        } else {
+          dom.addClass('playing-set');
+        }
         if (s !== exceptSet || t !== exceptTrack) {
-          $(`#s${s}t${t}`)[0].pause();
+          this.pauseTrack(s, t);
+        } else {
+          this.playTrack(s, t);
         }
       });
     });
   }
 
-  playNext(currentSet, currentTrack) {
-    const next = this.sets[currentSet].tracks[currentTrack + 1];
+  playNext(curSet, curTrack) {
+    const nextTrack = curTrack + 1;
+    const next = $(`#s${curSet}t${nextTrack}`);
     if (next) {
-      $(`#s${currentSet}t${currentTrack + 1}`)[0].play();
+      this.playTrack(curSet, nextTrack);
     } else {
       this.playIdle();
     }
   }
 
+  playSet(s) {
+    this.pauseAll(s, 0);
+    this.playTrack(s, 0);
+  }
+
   playIdle() {
-    $(`#s0t0`)[0].play();
+    this.playSet(0);
+  }
+
+  playTrack(s, t) {
+    const dom = $(`#s${s}t${t}`);
+    dom.parent().addClass('playing-track');
+    if (dom[0])
+      dom[0].play();
+  }
+
+  pauseTrack(s, t) {
+    const dom = $(`#s${s}t${t}`);
+    dom.parent().removeClass('playing-track');
+    if (dom[0])
+      dom[0].pause();
+  }
+
+  renderSet(set, s) {
+    $(`#s${s}`).html(`
+    <div class="card music-card">
+      <div class="card-body">
+        <h5 class="card-title">${set.name}</h5>
+      </div>
+      <ul class="list-group list-group-flush">
+      ${set.tracks.map((track, t) => {
+          return (t < SAMPLE_SIZE) ? `<li class="list-group-item">
+          <p>${track}</p>
+          <audio id="s${s}t${t}" src="../music/${set.name}/${track}" controls preload="auto"
+            title="${track}" />
+          </li>` : '';
+        }).join('')}
+      </ul>
+      ${s > 0 ?
+      `<div class="card-body">
+        <button id="play_s${s}" class="btn btn-primary">Play Set</button>
+        <button id="pause_s${s}" class="btn btn-light">Pause Set</button>
+        <button id="suffle_s${s}" class="btn btn-light">Suffle Set</button>
+      </div>` : ``}
+    </div>
+    `);
+    $(`#play_s${s}`).click(() => this.playSet(s));
+    $(`#pause_s${s}`).click(() => this.playIdle(s));
+    $(`#suffle_s${s}`).click(() => this.shuffleSet(s));
+    set.tracks.forEach((track, t) => {
+      $(`#s${s}t${t}`).on('play', () => {
+        this.pauseAll(s, t)
+      });
+      $(`#s${s}t${t}`).on('ended', () => this.playNext(s, t));
+    });
   }
 
   render() {
-    const dom = $('#music_container');
-    dom.html('');
+    this.dom.html('');
     this.sets.forEach((set, s) => {
-      dom.append(`
-      <div class="card music-card">
-        <div class="card-body">
-          <h5 class="card-title">${set.name}</h5>
-        </div>
-        <ul class="list-group list-group-flush">
-        ${set.tracks.map((track, t) => {
-            return `<li class="list-group-item">
-            <p>${track}</p>
-            <audio id="s${s}t${t}" src="../music/${set.name}/${track}" controls preload="auto"
-              title="${track}" />
-            </li>`;
-          }).join('')}
-        </ul>
-        <div class="card-body">
-          <a id="suffle_s${s}" class="card-link">Suffle</a>
-        </div>
-      </div>
-      `);
-      $(`#suffle_s${s}`).click(() => this.suffleSet(s));
-      set.tracks.forEach((track, t) => {
-        $(`#s${s}t${t}`).on('play', () => this.pauseAll(s, t));
-        $(`#s${s}t${t}`).on('ended', () => this.playNext(s, t));
-      });
-
+      this.dom.append(`
+        <div id="s${s}"></div>
+      `)
+      this.shuffleSet(s);
     });
   }
 }

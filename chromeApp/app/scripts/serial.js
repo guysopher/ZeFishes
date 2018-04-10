@@ -1,6 +1,10 @@
 class Serial {
 
-  constructor() {
+  constructor(handleAction) {
+
+    this.parent = {
+      handleAction
+    };
 
     this.active = true;
 
@@ -13,15 +17,15 @@ class Serial {
   }
 
   initChime() {
-    const minute = 5 * 1000;
+    const fiveSecs = 5 * 1000;
     const now = Date.now();
     const chime = () => "=========> " + moment(Date.now()).format("dddd, MMMM Do YYYY, HH:mm:ss");
     setTimeout(() => {
       setInterval(() => {
         this.addRecord(chime(), false);
-      }, minute);
+      }, fiveSecs);
       this.addRecord(chime(), false);
-    }, (((parseInt(now / minute) + 1) * minute) - now));
+    }, (((parseInt(now / fiveSecs) + 1) * fiveSecs) - now));
   }
 
   decode(buf) {
@@ -77,6 +81,8 @@ class Serial {
   }
 
   handleRecordActionIfNeeded(record) {
+    if (!this.active) return;
+
     const regex = /!\[[A-Z\d\s_-]+\]/;
     let m;
 
@@ -87,13 +93,18 @@ class Serial {
           let _m;
 
           if ((_m = _regex.exec(match)) !== null) {
-              // The result can be accessed through the `m`-variable.
               _m.forEach((_match, _groupIndex) => {
+                this.handleAction(_match);
                 this.addRecord(`Found action, group ${_match}`);
               });
           }
         });
     }
+  }
+
+  handleAction(actionStr) {
+    const [action, param] = actionStr.split(' ');
+    this.parent.handleAction(action, param);
   }
 
   initDom() {

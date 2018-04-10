@@ -45,4 +45,15 @@ ul.console li {
 .music-card {
   width: calc(100% - 10px);
   margin: 5px;
+  border: 2px solid #333;
+}
+
+.playing-set .card {
+  border-color:#007bff;
+  box-shadow: 0 0 6px 0px #666;
+}
+
+.playing-track {
+  background: #007bff;
+  color: white;
 }
