@@ -6,10 +6,14 @@ document.addEventListener('DOMContentLoaded', function() {
 class App {
   constructor() {
     this.serial = new Serial((action, param) => this.handleAction(action, param));
-    this.music = new Music();
+    this.music = new Music((status) => this.sendStatus(status));
   }
 
   init() {
+  }
+
+  sendStatus(status) {
+    this.serial.send(status);
   }
 
   handleAction(action, param) {

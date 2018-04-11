@@ -9,13 +9,23 @@ const logit = function() {
 const SAMPLE_SIZE = 2;
 
 class Music {
-  constructor() {
+  constructor(sendStatus) {
+    this.parent = {
+      sendStatus
+    };
+
+    this.initStatus();
     this.initSets();
     this.initDom();
     this.render();
     this.playIdle();
   }
 
+  initStatus() {
+    setInterval(() => {
+      this.parent.sendStatus(this.status);
+    }, 250);
+  }
   initDom() {
     this.dom = $('#music_container');
   }
@@ -43,6 +53,10 @@ class Music {
         ]
       }
     ];
+  }
+
+  setStatus(status) {
+    this.status = status;
   }
 
   shuffleSet(s) {
@@ -75,9 +89,11 @@ class Music {
   playNext(curSet, curTrack) {
     const nextTrack = curTrack + 1;
     const next = $(`#s${curSet}t${nextTrack}`);
-    if (next) {
+    if (next.length) {
+      this.setStatus('playing');
       this.playTrack(curSet, nextTrack);
     } else {
+      this.setStatus('waiting');
       this.playIdle();
     }
   }
@@ -85,6 +101,14 @@ class Music {
   playSet(s) {
     this.pauseAll(s, 0);
     this.playTrack(s, 0);
+  }
+
+  pauseSet(s) {
+    if (s > 0) {
+      this.playIdle();
+    } else {
+      this.pauseTrack(0, 0);
+    }
   }
 
   playIdle() {
@@ -120,16 +144,16 @@ class Music {
           </li>` : '';
         }).join('')}
       </ul>
-      ${s > 0 ?
-      `<div class="card-body">
+      <div class="card-body">
         <button id="play_s${s}" class="btn btn-primary">Play Set</button>
-        <button id="pause_s${s}" class="btn btn-light">Pause Set</button>
-        <button id="suffle_s${s}" class="btn btn-light">Suffle Set</button>
-      </div>` : ``}
+        <button id="pause_s${s}" class="btn btn-light">Stop Set</button>
+        ${s > 0 ?
+          `<button id="suffle_s${s}" class="btn btn-light">Suffle Set</button>` : ``}
+      </div>
     </div>
     `);
     $(`#play_s${s}`).click(() => this.playSet(s));
-    $(`#pause_s${s}`).click(() => this.playIdle(s));
+    $(`#pause_s${s}`).click(() => this.pauseSet(s));
     $(`#suffle_s${s}`).click(() => this.shuffleSet(s));
     set.tracks.forEach((track, t) => {
       $(`#s${s}t${t}`).on('play', () => {

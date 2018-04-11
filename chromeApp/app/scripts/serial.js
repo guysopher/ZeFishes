@@ -9,6 +9,7 @@ class Serial {
     this.active = true;
 
     this.decoder = new TextDecoder("utf-8");
+    this.encoder = new TextEncoder();
     this.records = [];
     this.serialWindow = $('#serial-window');
 
@@ -32,6 +33,10 @@ class Serial {
     return this.decoder.decode(buf);
   }
 
+  encode(buf) {
+    return this.encoder.encode(buf);
+  }
+
   connect(port) {
     this.disconnect();
     chrome.serial.connect(port, {
@@ -45,6 +50,10 @@ class Serial {
     this.listener = chrome.serial.onReceive.addListener((res) => {
       this.onReceive(res);
     });
+  }
+
+  send(str) {
+    chrome.serial.send(this.connectionId, this.encode(str), () => {})
   }
 
   onReceive(res) {
