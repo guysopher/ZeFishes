@@ -22,10 +22,12 @@ class Music {
   }
 
   initStatus() {
-    setInterval(() => {
+    if (this.statusInterval) clearInterval(this.statusInterval);
+    this.statusInterval = setInterval(() => {
       this.parent.sendStatus(this.status);
-    }, 250);
+    }, 1000);
   }
+
   initDom() {
     this.dom = $('#music_container');
   }
@@ -56,6 +58,7 @@ class Music {
   }
 
   setStatus(status) {
+    this.parent.sendStatus(this.status);
     this.status = status;
   }
 
@@ -90,15 +93,16 @@ class Music {
     const nextTrack = curTrack + 1;
     const next = $(`#s${curSet}t${nextTrack}`);
     if (next.length) {
-      this.setStatus('playing');
+      this.setStatus('PLAYING');
       this.playTrack(curSet, nextTrack);
     } else {
-      this.setStatus('waiting');
+      this.setStatus('WAITING');
       this.playIdle();
     }
   }
 
   playSet(s) {
+    this.setStatus(s > 0 ? 'PLAYING' : 'WAITING');
     this.pauseAll(s, 0);
     this.playTrack(s, 0);
   }

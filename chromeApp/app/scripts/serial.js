@@ -53,7 +53,10 @@ class Serial {
   }
 
   send(str) {
-    chrome.serial.send(this.connectionId, this.encode(str), () => {})
+    if (str) {
+      this.addRecord("Sending status: " + str);
+      chrome.serial.send(this.connectionId, this.encode(str), () => {})
+    }
   }
 
   onReceive(res) {
@@ -136,6 +139,11 @@ class Serial {
 
     $('button#serial_stop').click(() => {
         this.active = false;
+    });
+
+    $('button#serial_clear').click(() => {
+        this.records = [];
+        this.render();
     });
 
     $('button#serial_start').click(() => {

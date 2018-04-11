@@ -19,7 +19,7 @@ class App {
   handleAction(action, param) {
     switch (action) {
       case 'PLAY':
-        this.music.playTrack(param, 0);
+        this.music.playSet(param);
       case 'STOP':
       case 'IDLE':
     }
