@@ -54,7 +54,7 @@ class Serial {
 
   send(str) {
     if (str) {
-      this.addRecord("Sending status: " + str);
+      // this.addRecord("Sending status: " + str);
       chrome.serial.send(this.connectionId, this.encode(str), () => {})
     }
   }
@@ -107,7 +107,6 @@ class Serial {
           if ((_m = _regex.exec(match)) !== null) {
               _m.forEach((_match, _groupIndex) => {
                 this.handleAction(_match);
-                this.addRecord(`Found action, group ${_match}`);
               });
           }
         });

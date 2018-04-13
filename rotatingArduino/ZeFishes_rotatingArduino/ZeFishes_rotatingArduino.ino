@@ -12,7 +12,7 @@ RCSwitch mySwitch = RCSwitch();
 void setup() {
 
   Serial.begin(9600);
-  
+  pinMode(2, INPUT_PULLUP);
   // Transmitter is connected to Arduino Pin #10  
   mySwitch.enableTransmit(10);
   
@@ -35,17 +35,18 @@ void loop() {
   mySwitch.switchOff("11111", "00010");
   delay(1000);*/
 
+  Serial.println(analogRead(2));
   /* Same switch as above, but using decimal code */
-  mySwitch.send(1, 24);
-  digitalWrite(13,HIGH);
-  delay(1000);  
-  mySwitch.send(2, 24);
-  delay(1000);
-  mySwitch.send(3, 24);
-  delay(1000);
-  mySwitch.send(4, 24);
-  delay(1000);
-  digitalWrite(13,LOW);  
+//  mySwitch.send(1, 24);
+//  digitalWrite(13,HIGH);
+//  delay(1000);  
+//  mySwitch.send(2, 24);
+//  delay(1000);
+//  mySwitch.send(3, 24);
+//  delay(1000);
+//  mySwitch.send(4, 24);
+//  delay(1000);
+//  digitalWrite(13,LOW);  
 
   /* Same switch as above, but using binary code */
   /*mySwitch.send("000000000001010100010001");

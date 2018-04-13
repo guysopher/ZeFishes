@@ -1,4 +1,32 @@
 //-----------------------------------------------------------------------------------//
+//--------------------------------------| LEDS |-------------------------------------//
+//-----------------------------------------------------------------------------------//
+
+class Leds {
+    int pin;
+
+    public:
+        Leds(int ledsPin) {
+            pin = ledsPin;
+        }
+
+        void setup() {
+          pinMode(pin, OUTPUT);
+        }
+        
+        void relax() {
+            // say("Fans off");
+            digitalWrite(pin, LOW);
+        }
+        
+        void blow() {
+            // say("Fans on");
+            digitalWrite(pin, HIGH);
+        }
+
+};
+
+//-----------------------------------------------------------------------------------//
 //--------------------------------------| FANS |-------------------------------------//
 //-----------------------------------------------------------------------------------//
 
@@ -15,12 +43,12 @@ class Fans {
         }
         
         void relax() {
-            say("Fans off");
+            // say("Fans off");
             digitalWrite(pin, LOW);
         }
         
         void blow() {
-            say("Fans on");
+            // say("Fans on");
             digitalWrite(pin, HIGH);
         }
 
@@ -49,28 +77,91 @@ class Lights {
         }
         
         void on() {
-            say("Lights on");
+            // say("Lights on");
             digitalWrite(pin1, HIGH);
             digitalWrite(pin2, HIGH);
             digitalWrite(pin3, HIGH);
         }
         
         void off() {
-            say("Lights off");
+            // say("Lights off");
             digitalWrite(pin1, LOW);
             digitalWrite(pin2, LOW);
             digitalWrite(pin3, LOW);
         }
         
         void dance(int loops) {
-            String str = ("Dancing! ");
-            str += loops;
-            say(str);
+            // String str = ("Dancing! ");
+            // str += loops;
+            // say(str);
             digitalWrite(pin1, ((loops % 3) == 0));
             digitalWrite(pin2, ((loops % 3) == 1));
             digitalWrite(pin3, ((loops % 3) == 2));
         }
 
+};
+
+
+//-----------------------------------------------------------------------------------//
+//-------------------------------------| ENGINE |------------------------------------//
+//-----------------------------------------------------------------------------------//
+
+class Engine {
+    int rpmPin;
+    int pwmPin;
+    
+    int curPwm = 0;
+    
+    const int maxRpm = 60; //the maximum wanted RPM
+    const int maxPwm = 150; //the pwm signal that generates the maxRpm
+
+    const int pwmStep = 1; //the "jumps" in pwm signal to generate the spin
+    
+    public:
+        Engine(int _pwmPin, int _rpmPin) {
+            pwmPin = _pwmPin;
+            rpmPin = _rpmPin;
+        }
+
+        void setup() {
+          pinMode(pwmPin, OUTPUT);
+          pinMode(rpmPin, INPUT);
+        }
+        
+        int getRpm() {
+            return analogRead(rpmPin);
+            //todo - calc rpm by somthing...
+        }
+        
+        void spinAt(int rpm) {
+
+            rpm = min(maxRpm, rpm);
+
+            say("Spinning at: " + (String)rpm);
+            const int curRpm = this->getRpm();
+            const int diffRpm = rpm - curRpm;
+            if (diffRpm > 0) {
+                curPwm += pwmStep;    
+            } else if (diffRpm < 0) {
+                curPwm -= pwmStep;
+            }
+            curPwm = max(0, curPwm);
+            curPwm = min(maxPwm, curPwm);
+
+            say("Engine RPM is: " + (String)curRpm);
+            say("Engine PWM is: " + (String)curPwm);
+            
+            analogWrite(pwmPin, curPwm);
+        }
+        
+        void slow() {
+            this->spinAt(30);
+        }
+        
+        void fast() {
+            this->spinAt(15);
+        }
+        
 };
 
 //-----------------------------------------------------------------------------------//
@@ -100,8 +191,10 @@ class RF {
                 
         String receive() {
             if (rfSwitch.available()) {
+                const String val = (String)rfSwitch.getReceivedValue();
+                say("Received Fish #" + val);
                 rfSwitch.resetAvailable();
-                return (String)rfSwitch.getReceivedValue();
+                return val;
             } else {
                 return "";
             }
@@ -110,7 +203,7 @@ class RF {
         String mockReceive() {
             if (random(0, 20) <= 1) {
                 say("Simulating Fish #2");
-                return ("![PLAY 2]");
+                return ("2");
             } else {
                 return "";
             }
@@ -119,7 +212,7 @@ class RF {
 };
 
 //-----------------------------------------------------------------------------------//
-//--------------------------------------| MAIN |-------------------------------------//
+//--------------------------------------| MUSIC |-------------------------------------//
 //-----------------------------------------------------------------------------------//
 
 class Music {
@@ -158,12 +251,9 @@ class Music {
 
             Serial.setTimeout(50);
             status = (String)Serial.readString();
-            say("Music status is: ");
-            say(status);
-            say((String)status.indexOf("PLAYING"));
-            say((String)status.indexOf("WAITING"));
+            // say("Music status is: ");
+            // say(status);
             if (status.indexOf("PLAYING") >= 0) {
-
                 curStatus = "PLAYING";
                 say("Current Status is: " + curStatus);
             } else if (status.indexOf("WAITING") >= 0) {
@@ -176,7 +266,6 @@ class Music {
         bool isPlaying() {
             this->setStatus();
             const bool isPlaying = curStatus != "WAITING";
-            say("isPlaying: " + (String)isPlaying);
             return isPlaying;
         }
 };
@@ -191,7 +280,10 @@ Music   music   = Music();
 Lights  lights  = Lights(1,2,3); //three lights on pins D2, D2, D3
 
 const int MAX_LOOP = 1*2*3*4*5*6*7*8*9*10;
+const int minPlayTime = 1000 * 10; //minimum play time for music (used to let the system adjust)
+
 int loops = 0;
+int lastPlayStart = 0;
 
 String zeFish;
 
@@ -205,19 +297,20 @@ void setup(){
 
 void loop() {
     
-    if (music.isPlaying()) {
-        say("Music still playing...");
+    if (music.isPlaying() || ((millis() - lastPlayStart) < minPlayTime)) {
+        // say("Music still playing...");
         fans.blow();
         lights.dance(loops);
     } else {
-        zeFish = rf.mockReceive();
+        zeFish = rf.receive();
         if (zeFish.length() > 0) {
             say("Received fish: " + zeFish);
+            lastPlayStart = millis();
             music.play(zeFish);
             fans.blow();
             lights.dance(loops);
         } else {
-            say("No fishes...");
+            // say("No fishes...");
             music.idle();
             fans.relax();
             lights.off();
@@ -229,68 +322,6 @@ void loop() {
 }
 
 void say(String toSay) {
-    Serial.println(" <>===<><>---------->> " + toSay);
+    Serial.println("<Arduino> " + toSay);
     delay(10);
 }
-
-
-// //--------------------------------------| MAIN |-------------------------------------//
-// // This #include statement was automatically added by the Particle IDE.
-// #include <RCSwitch.h>
-
-// #define rfReceivePin A0  //RF Receiver pin = Analog pin 0
-// #define ledPin 7        //Onboard LED = digital pin 13
-
-// unsigned int data = 0;   // variable used to store received data
-// const unsigned int upperThreshold = 70;  //upper threshold value
-// const unsigned int lowerThreshold = 50;  //lower threshold value
-
-// RCSwitch mySwitch = RCSwitch();
-// Fans fans = Fans(0); //D0 is the fans switch
-
-// void setup(){
-    
-//     fans.setup();
-//     pinMode(ledPin, OUTPUT);
-//     Serial.begin(9600);
-
-//     mySwitch.enableReceive(A0);  // Receiver on interrupt 0 => that is pin #2
-    
-// }
-
-// unsigned int loops = 0;
-
-// void loop() {
-    
-//     if (random(0, 10) <= 1) {
-
-//         String str = "";
-//         str += loops;
-//         str += ") ![PLAY 5]";
-//         say(str);
-
-//     } else {
-    
-//         if (mySwitch.available()) {
-//             // Serial.println(mySwitch.getReceivedValue(), mySwitch.getReceivedBitlength(), mySwitch.getReceivedDelay(), mySwitch.getReceivedRawdata(),mySwitch.getReceivedProtocol());
-//             String str = "";
-//             str += loops + ") ------------------| RECEIVING: " + mySwitch.getReceivedValue();
-//             say(str);
-//             mySwitch.resetAvailable();
-//         } else {
-//             String str = "";
-//             str += loops;
-//             str += ") ...................";
-//             say(str);
-//         }
-//     }
-    
-//     delay(250);
-//     loops++;
-// }
-
-// void say(String toSay) {
-//     Serial.println(toSay);
-    
-//     //Serial.println((String)'[|' + str + '|]');
-// }
