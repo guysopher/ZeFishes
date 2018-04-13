@@ -58,8 +58,8 @@ class Music {
   }
 
   setStatus(status) {
-    this.parent.sendStatus(this.status);
     this.status = status;
+    this.parent.sendStatus(this.status);
   }
 
   shuffleSet(s) {
@@ -93,10 +93,8 @@ class Music {
     const nextTrack = curTrack + 1;
     const next = $(`#s${curSet}t${nextTrack}`);
     if (next.length) {
-      this.setStatus('PLAYING');
       this.playTrack(curSet, nextTrack);
     } else {
-      this.setStatus('WAITING');
       this.playIdle();
     }
   }

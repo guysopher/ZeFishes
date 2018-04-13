@@ -53,8 +53,8 @@ class Serial {
   }
 
   send(str) {
-    if (str) {
-      // this.addRecord("Sending status: " + str);
+    if (str && this.connectionId) {
+      this.addRecord("Sending status: " + str);
       chrome.serial.send(this.connectionId, this.encode(str), () => {})
     }
   }
@@ -88,20 +88,19 @@ class Serial {
     if (addTime) {
       record = `[${moment().format('HH:mm:ss.SSS')}] ${record}`;
     }
-    this.records = [record].concat(this.records.slice(0,9999));
+    this.records = [record].concat(this.records.slice(0,999));
     this.render();
   }
 
   handleRecordActionIfNeeded(record) {
     if (!this.active) return;
 
-    const regex = /!\[[A-Z\d\s_-]+\]/;
+    const regex = /!\[[A-Z\d\s_-]+\]/; //search ![ACTION]
     let m;
 
     if ((m = regex.exec(record)) !== null) {
-        // The result can be accessed through the `m`-variable.
         m.forEach((match, groupIndex) => {
-          const _regex = /[^!\[]+[^\]]/;
+          const _regex = /[^!\[]+[^\]]/; //search inside ![ACTION]
           let _m;
 
           if ((_m = _regex.exec(match)) !== null) {

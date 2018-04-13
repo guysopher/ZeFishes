@@ -2,26 +2,29 @@
 //--------------------------------------| LEDS |-------------------------------------//
 //-----------------------------------------------------------------------------------//
 
+#include <FastLED.h>
+FASTLED_USING_NAMESPACE //The FASTLED_USING_NAMESPACE macro will allow your code to work in environments where FastLED is using a namespace vs. places where it isn't. Also, the name of the namespace isn't finalized.
+
+#define NUM_LEDS 60
+#define LEDS_PIN 6 //in FastLED pin must be const
+
 class Leds {
-    int pin;
+    
+    CRGB leds[NUM_LEDS];
 
     public:
-        Leds(int ledsPin) {
-            pin = ledsPin;
+        Leds() {
         }
 
         void setup() {
-          pinMode(pin, OUTPUT);
+            FastLED.addLeds<NEOPIXEL, LEDS_PIN>(leds, NUM_LEDS);
         }
         
         void relax() {
-            // say("Fans off");
-            digitalWrite(pin, LOW);
+            
         }
         
-        void blow() {
-            // say("Fans on");
-            digitalWrite(pin, HIGH);
+        void dance() {
         }
 
 };
@@ -189,6 +192,12 @@ class RF {
         }
 
                 
+        void clear() {
+            if (rfSwitch.available()) {
+                rfSwitch.resetAvailable();
+            }
+        }
+                
         String receive() {
             if (rfSwitch.available()) {
                 const String val = (String)rfSwitch.getReceivedValue();
@@ -220,6 +229,10 @@ class Music {
     
         String curStatus = "WAITING";
         
+        const int minPlayTime = 1000 * 3; //minimum play time for music (used to let the system adjust)
+        int lastPlayStart = 0;
+        int lastIdleStart = 0;
+        
         Music() {
         }
 
@@ -229,6 +242,7 @@ class Music {
 
                 
         void play(String set) {
+            lastPlayStart = millis();
             String str = "![PLAY ";
             str += set;
             str += "]";
@@ -236,11 +250,13 @@ class Music {
         }
                 
         void stop() {
+            lastPlayStart = 0;
             String str = "![STOP]";
             Serial.println(str);
         }
                 
         void idle() {
+            lastIdleStart = millis();
             String str = "![IDLE]";
             Serial.println(str);
         }
@@ -264,9 +280,15 @@ class Music {
         }
 
         bool isPlaying() {
-            this->setStatus();
-            const bool isPlaying = curStatus != "WAITING";
-            return isPlaying;
+            if ((millis() - lastPlayStart) < minPlayTime) { // is in min play time
+                return true;
+            } else if ((millis() - lastIdleStart) < minPlayTime) { // is in min idle time
+                return false;
+            } else {
+                this->setStatus();
+                const bool isPlaying = curStatus != "WAITING";
+                return isPlaying;
+            }
         }
 };
 
@@ -280,10 +302,8 @@ Music   music   = Music();
 Lights  lights  = Lights(1,2,3); //three lights on pins D2, D2, D3
 
 const int MAX_LOOP = 1*2*3*4*5*6*7*8*9*10;
-const int minPlayTime = 1000 * 10; //minimum play time for music (used to let the system adjust)
 
 int loops = 0;
-int lastPlayStart = 0;
 
 String zeFish;
 
@@ -297,15 +317,14 @@ void setup(){
 
 void loop() {
     
-    if (music.isPlaying() || ((millis() - lastPlayStart) < minPlayTime)) {
+    if (music.isPlaying()) {
         // say("Music still playing...");
+        rf.clear();
         fans.blow();
         lights.dance(loops);
     } else {
         zeFish = rf.receive();
         if (zeFish.length() > 0) {
-            say("Received fish: " + zeFish);
-            lastPlayStart = millis();
             music.play(zeFish);
             fans.blow();
             lights.dance(loops);
