@@ -54,7 +54,7 @@ class Serial {
 
   send(str) {
     if (str && this.connectionId) {
-      this.addRecord("Sending status: " + str);
+      // this.addRecord("Sending status: " + str);
       chrome.serial.send(this.connectionId, this.encode(str), () => {})
     }
   }
@@ -120,7 +120,9 @@ class Serial {
   initDom() {
     chrome.serial.getDevices(function(devices) {
       for (var i = 0; i < devices.length; i++) {
+        if (devices[i].displayName) {
           $('select#portList').append('<option value="' + devices[i].path + '">' + (devices[i].displayName ? (devices[i].displayName + ": ") : "") + devices[i].path + '</option>');
+        }
       }
     });
 

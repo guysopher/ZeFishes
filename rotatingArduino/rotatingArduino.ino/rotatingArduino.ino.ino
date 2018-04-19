@@ -1,5 +1,4 @@
 #include <RCSwitch.h>
-
 class RF {
     
     int pin;
@@ -26,6 +25,9 @@ class RF {
 class Bubbles {
     
     int pin;
+    int lastBubblesTime = 0;
+    const int bubblingDuration = 60 * 1000; //each bubbling on time
+    bool isBubbling = false;
     
     public:
         Bubbles(int _pin) {
@@ -38,58 +40,83 @@ class Bubbles {
 
                 
         void makeBubbles() {
-          Serial.println("Making Bubbles!!!");
+          if (!isBubbling) {
+            Serial.println("Making Bubbles!!!");
+            isBubbling = true;
+          }
           digitalWrite(pin, HIGH);
         }
 
         void stopBubbles() {
+          isBubbling = false;
           digitalWrite(pin, LOW);
         }
 
+        void stopBubblesWhenNeeded() {
+          if ((millis() - lastBubblesTime) > bubblingDuration) {
+            //enough time has passed, stopping
+            this->stopBubbles();
+          } else {
+            //continue bubbling 
+            
+          }
+        }
 };
 
 #include <Bounce2.h>
 
-class Fishes {
+#define TOTAL_FISHES 8
 
-    const int totalFishes = 8;
-    int pins[8];
-    Bounce bouncers[8];
+int zeFish = 0;
+int lastFishTime = 0;
+const int tween = 5 * 1000; //grace period until more fish can be caught
+
+class Fishes {
+    
+    int fish = 0;
+    int pins[TOTAL_FISHES];
+    Bounce bouncers[TOTAL_FISHES];
     
     public:
         Fishes(int fromPin) {
-          for (int i = 0; i < totalFishes; i++) {
+          for (int i = 0; i < TOTAL_FISHES; i++) {
             pins[i] = fromPin + i;
             bouncers[i] = Bounce( fromPin + i , 5 ); 
           }
         }
 
         void setup() {
-          for (int i = 0; i < totalFishes; i++) {
+          for (int i = 0; i < TOTAL_FISHES; i++) {
             pinMode(pins[i], INPUT_PULLUP);
           }
         }
 
                 
         int getFish() {
-          int fish = 0;
-          String fishes = ("Getting fishes : [");
-          for (int i = 0; i < totalFishes; i++) {
-            bouncers[i].update();
-            fishes += (bouncers[i].read());
-            if (bouncers[i].read() == LOW) {
-              fish = i + 1;
+
+          if (fish > 0 && ((millis() - lastFishTime) < tween)) {
+            //still transmitting last fish
+//            Serial.print("Still transmitting fish #");
+//            Serial.println(fish);
+          } else {
+            fish = 0;
+            String fishes = ("Getting fishes : [");
+            for (int i = 0; i < TOTAL_FISHES; i++) {
+              bouncers[i].update();
+              fishes += (bouncers[i].read());
+              if (bouncers[i].read() == LOW) {
+                fish = i + 1;
+              }
+            }
+            fishes += ("]");
+            
+            if (fish > 0) {
+              Serial.print("Found fish! ");
+              Serial.print(fish);
+              Serial.print(" -> ");
+              Serial.println(fishes);
             }
           }
-          fishes += ("]");
-          
-          if (fish > 0) {
-            Serial.print("Found fish! ");
-            Serial.print(fish);
-            Serial.print(" -> ");
-            Serial.println(fishes);
-          }
-          
           return fish;
         }
 
@@ -98,10 +125,6 @@ class Fishes {
 RF      rf      = RF(10); //D10 is the rf transmitter pin
 Fishes  fishes  = Fishes(2); //D2 is the first fish pin (2-9)
 Bubbles bubbles = Bubbles(11);
-
-int zeFish = 0;
-
-const int tween = 5 * 1000; //grace period until more fish can be caught
 
 void setup() {
 
@@ -115,17 +138,16 @@ void setup() {
 
 void loop() {
 
-  zeFish = fishes.getFish();
+  if ((millis() - lastFishTime) > tween) {
+    zeFish = fishes.getFish();
+  }
 
   if (zeFish > 0) {
     rf.sendFish(zeFish);
     bubbles.makeBubbles();
-    
-    delay(tween);
-    
   } else {
-    bubbles.stopBubbles();
+    bubbles.stopBubblesWhenNeeded();
   }
 
-  delay(250);
+  delay(50);
 }
