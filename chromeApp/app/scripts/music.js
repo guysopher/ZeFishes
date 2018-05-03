@@ -37,7 +37,7 @@ class Music {
       {
         name: "Idle",
         tracks: [
-          'Jean-Pierre Rampal - J.S. Bach _ Suite N°2 BWV 1067 - 2. Double-Badinerie.mp3',
+          '08Ocean_64kb.mp3',
         ]
       },{
         name: "Forrest Gump",

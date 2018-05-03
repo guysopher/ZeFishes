@@ -85,7 +85,7 @@ class Fishes {
         Fishes(int fromPin) {
           for (int i = 0; i < TOTAL_FISHES; i++) {
             pins[i] = fromPin + i;
-            bouncers[i] = Bounce( fromPin + i , 5 ); 
+            bouncers[i] = Bounce( fromPin + i , 1 ); 
           }
         }
 
@@ -111,8 +111,10 @@ class Fishes {
             String fishes = ("[");
             for (int i = 0; i < TOTAL_FISHES; i++) {
               bouncers[i].update();
+//              fishes += (digitalRead(pins[i]);
               fishes += (bouncers[i].read());
               if (bouncers[i].read() == LOW) {
+//              if (digitalRead(pins[i]) == LOW) {
                 fish = i + 1;
               }
             }
@@ -158,5 +160,5 @@ void loop() {
     bubbles.stopBubblesWhenNeeded();
   }
 
-  delay(50);
+  delay(1);
 }
