@@ -156,10 +156,11 @@ class Serial {
     if (!this.active) return;
 
     const dom  = this.serialWindow;
-    dom.html('');
-    this.records.forEach((data, idx) => {
-      dom.append("<li>" + data + "</li>");
-    });
+    // dom.html('');
+    // this.records.forEach((data, idx) => {
+      dom.prepend("<li>" + this.records[0] + "</li>");
+      dom.find('li').last().remove();
+    // });
 
   }
 }
