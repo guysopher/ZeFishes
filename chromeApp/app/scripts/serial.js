@@ -54,7 +54,7 @@ class Serial {
 
   send(str) {
     if (str && this.connectionId) {
-      // this.addRecord("Sending status: " + str);
+      this.addRecord("Sending status: " + str);
       chrome.serial.send(this.connectionId, this.encode(str), () => {})
     }
   }

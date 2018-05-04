@@ -6,7 +6,7 @@ const logit = function() {
   console.log(arguments[0],arguments[1],arguments[2],arguments);
 }
 
-const SAMPLE_SIZE = 2;
+const SAMPLE_SIZE = 1;
 
 class Music {
   constructor(sendStatus) {

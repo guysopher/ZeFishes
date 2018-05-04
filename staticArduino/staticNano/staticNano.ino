@@ -1,16 +1,16 @@
-const int MAX_LOOP = 1*2*3*2*5*7*2*3;
+const int MAX_LOOP = 1*2*3*4*5;
 const int DELAY = 50;
-int loops = 0;
+long zeLoops = 0;
 
 String tmp = "";
 String zeFish;
 
 bool isEveryMillis(int m, int is) {
-    return ((loops * DELAY) % m) == is;    
+    return ((zeLoops * DELAY) % m) == is;    
 }
 
 void say(String toSay) {
-    if (isEveryMillis(2000, 0)) {
+    if (isEveryMillis(1000, 0)) {
         Serial.println("[Arduino] " + toSay);
         delay(10);
     }
@@ -32,23 +32,25 @@ class Leds {
         }
 
         void setup() {
-            pinMode(slowPin, OUTPUT);
-            pinMode(fastPin, OUTPUT);
+            pinMode(7, OUTPUT);
+            pinMode(8, OUTPUT);
         }
         
         void party() {
-            digitalWrite(fastPin, LOW);
-            digitalWrite(slowPin, HIGH);
+            say("Leds Party!");
+            digitalWrite(7, LOW);
+            digitalWrite(8, HIGH);
         }
 
         void sea() {
-            digitalWrite(slowPin, LOW);
-            digitalWrite(fastPin, HIGH);
+            say("Leds Chilling...");
+            digitalWrite(7, LOW);
+            digitalWrite(8, HIGH);
         }
         
         void stop() {
-            digitalWrite(slowPin, HIGH);
-            digitalWrite(fastPin, HIGH);
+            digitalWrite(7, HIGH);
+            digitalWrite(8, HIGH);
         }
 
 };
@@ -204,7 +206,7 @@ class RF {
         RF(int rfPin) {
             pin = rfPin;
             String str = "";
-            str = str + "RF Pin is: ";
+//            str = str + "RF Pin is: ";
 //            str = str + pin;
 //            say(str);
         }
@@ -291,8 +293,8 @@ class Music {
 
             Serial.setTimeout(50);
             status = (String)Serial.readString();
-            // say("Music status is: ");
-            // say(status);
+             say("Music status is: ");
+             say(status);
             if (status.indexOf("PLAYING") >= 0) {
                 curStatus = "PLAYING";
                 say("Current Status is: " + curStatus);
@@ -343,7 +345,7 @@ void party() {
     fans.blow();
     lights.dance();
 //    engine.fast();
-//    leds.party();
+    leds.party();
 }
 
 void chill() {
@@ -351,7 +353,7 @@ void chill() {
     fans.relax();
     lights.on();
 //    engine.slow();
-//    leds.sea();
+    leds.sea();
 }
 
 void loop() {
@@ -371,8 +373,13 @@ void loop() {
             chill();
         }
     }
+
+    say("Loop #" + String(zeLoops));
     
-    loops = (loops + 1) % MAX_LOOP;
+    zeLoops = (zeLoops + 1);
+    if (zeLoops > MAX_LOOP) {
+      zeLoops = 0;
+    }
     
     delay(DELAY);
 }
